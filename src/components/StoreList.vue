@@ -5,7 +5,7 @@
       <div class="relative">
         <input
             v-model="localSearchQuery"
-            @input="debouncedSearch"
+            @keyup.enter="debouncedSearch"
             placeholder="제목 또는 주소 검색"
             class="p-2 border rounded w-full"
             :class="{ 'bg-gray-700 text-white': isDarkMode }"
