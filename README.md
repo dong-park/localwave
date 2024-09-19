@@ -2,6 +2,10 @@
 
 Localwave is a Vue.js application that provides information about various local markets in Seoul. Users can explore different markets, search for specific stores or products, and view detailed information about local businesses on an interactive map.
 
+# Service URL
+
+https://localwave.netlify.app
+
 ## Features
 
 - Interactive map of Seoul using Naver Maps API
