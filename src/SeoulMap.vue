@@ -5,24 +5,27 @@
       @toggle-dark-mode="toggleDarkMode"
   />
 
-  <div class="flex flex-col md:flex-row h-screen" :class="{ 'bg-gray-800': isDarkMode }">
-    <div class="md:w-1/3 h-1/2 md:h-full flex flex-col order-2 md:order-1"
-         :class="{ 'bg-gray-800': isDarkMode }">
-      <StoreList
-          :stores="stores"
-          :loading="loading"
-          :error="error"
-          :total-count="totalCount"
-          :has-more="hasMore"
-          :is-dark-mode="isDarkMode"
-          @search="handleSearch"
-          @load-more="loadMore"
-          @select-store="selectStore"
-      />
+  <div class="flex flex-col md:flex-row full-height" :class="{ 'bg-gray-800': isDarkMode }">
+    <div
+        class="w-full md:w-1/3 h-[50vh] md:h-full flex flex-col order-2 md:order-1 overflow-hidden"
+        :class="{ 'bg-gray-800': isDarkMode }"
+    >
+      <div class="flex-grow overflow-y-auto">
+        <StoreList
+            :stores="stores"
+            :loading="loading"
+            :error="error"
+            :total-count="totalCount"
+            :has-more="hasMore"
+            :is-dark-mode="isDarkMode"
+            @search="handleSearch"
+            @load-more="loadMore"
+            @select-store="selectStore"
+        />
+      </div>
     </div>
 
-    <!-- Map area (full width on mobile, 2/3 on desktop) -->
-    <div class="md:w-2/3 h-1/2 md:h-full relative order-1 md:order-2">
+    <div class="w-full md:w-2/3 h-[50vh] md:h-full relative order-1 md:order-2">
       <MapView
           :stores="stores"
           :subjects="subjects"
@@ -39,7 +42,6 @@
       />
     </div>
 
-    <!-- Mobile bottom sheet -->
     <MobileBottomSheet
         :is-open="isBottomSheetOpen"
         :is-dark-mode="isDarkMode"
@@ -52,7 +54,7 @@
 </template>
 
 <script>
-import {ref, onMounted, computed, watch} from 'vue';
+import {ref, onMounted, computed, watch, onBeforeMount} from 'vue';
 import {supabase} from '@/composables/supabaseClient';
 import FloatingButtons from "@/components/FloatingButtons.vue";
 import StoreList from "@/components/StoreList.vue";
@@ -358,8 +360,19 @@ export default {
       return subject ? subject.emoji : '';
     };
 
+    const setViewportHeight = () => {
+      let vh = window.innerHeight * 0.01
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
     onMounted(() => {
       loadSubjects();
+      setViewportHeight()
+      window.addEventListener('resize', setViewportHeight)
+    });
+
+    onBeforeMount(() => {
+      window.removeEventListener('resize', setViewportHeight)
     });
 
     watch(() => stores.value, (newStores) => {
@@ -389,7 +402,8 @@ export default {
       handleMapInit,
       handleMapMoved,
       getCurrentLocation,
-      searchCurrentLocation
+      searchCurrentLocation,
+      setViewportHeight
     };
   }
 }
@@ -400,7 +414,27 @@ export default {
 @tailwind components;
 @tailwind utilities;
 
-.dark {
-  @apply bg-gray-900 text-white;
+:root {
+  --vh: 1vh;
+}
+
+html, body {
+  height: 100%;
+}
+
+#app {
+  height: 100%;
+}
+
+.full-height {
+  height: 100vh; /* Fallback for browsers that do not support Custom Properties */
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+@media (max-width: 767px) {
+  .h-\[50vh\] {
+    height: 50vh; /* Fallback */
+    height: calc(var(--vh, 1vh) * 50);
+  }
 }
 </style>
