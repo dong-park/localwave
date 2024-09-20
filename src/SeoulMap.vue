@@ -7,7 +7,7 @@
 
   <div class="flex flex-col md:flex-row h-screen" :class="{ 'bg-gray-800': isDarkMode }">
     <div
-        class="w-full md:w-1/3 h-[50vh] md:h-full flex flex-col order-2 md:order-1"
+        class="w-full md:w-1/3 flex-grow md:h-full flex flex-col order-2 md:order-1"
         :class="{ 'bg-gray-800': isDarkMode }"
     >
       <StoreList
