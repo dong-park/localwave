@@ -6,8 +6,10 @@
   />
 
   <div class="flex flex-col md:flex-row h-screen" :class="{ 'bg-gray-800': isDarkMode }">
-    <div class="w-full md:w-1/3 h-1/2 md:h-full flex flex-col order-2 md:order-1"
-         :class="{ 'bg-gray-800': isDarkMode }">
+    <div
+        class="w-full md:w-1/3 h-[50vh] md:h-full flex flex-col order-2 md:order-1"
+        :class="{ 'bg-gray-800': isDarkMode }"
+    >
       <StoreList
           :stores="stores"
           :loading="loading"
@@ -21,8 +23,7 @@
       />
     </div>
 
-    <!-- Map area (full width on mobile, 2/3 on desktop) -->
-    <div class="w-full md:w-2/3 h-1/2 md:h-full relative order-1 md:order-2">
+    <div class="w-full md:w-2/3 h-[50vh] md:h-full relative order-1 md:order-2">
       <MapView
           :stores="stores"
           :subjects="subjects"
@@ -39,7 +40,6 @@
       />
     </div>
 
-    <!-- Mobile bottom sheet -->
     <MobileBottomSheet
         :is-open="isBottomSheetOpen"
         :is-dark-mode="isDarkMode"
@@ -399,6 +399,21 @@ export default {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+#app {
+  height: 100%;
+}
+
+@media (max-width: 767px) {
+  .h-screen {
+    height: auto;
+    min-height: 100vh;
+  }
+}
 
 .dark {
   @apply bg-gray-900 text-white;
