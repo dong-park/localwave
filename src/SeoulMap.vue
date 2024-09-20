@@ -1,22 +1,25 @@
 <template>
-  <div class="flex flex-col md:flex-row h-screen" :class="{ 'bg-gray-800': isDarkMode }">
-    <FloatingButtons
-        :is-dark-mode="isDarkMode"
-        @open-seoul-pay="openSeoulPay"
-        @toggle-dark-mode="toggleDarkMode"
-    />
+  <FloatingButtons
+      :is-dark-mode="isDarkMode"
+      @open-seoul-pay="openSeoulPay"
+      @toggle-dark-mode="toggleDarkMode"
+  />
 
-    <StoreList
-        :stores="stores"
-        :loading="loading"
-        :error="error"
-        :total-count="totalCount"
-        :has-more="hasMore"
-        :is-dark-mode="isDarkMode"
-        @search="handleSearch"
-        @load-more="loadMore"
-        @select-store="selectStore"
-    />
+  <div class="flex flex-col md:flex-row h-screen" :class="{ 'bg-gray-800': isDarkMode }">
+    <div class="w-full md:w-1/3 h-1/2 md:h-full flex flex-col order-2 md:order-1"
+         :class="{ 'bg-gray-800': isDarkMode }">
+      <StoreList
+          :stores="stores"
+          :loading="loading"
+          :error="error"
+          :total-count="totalCount"
+          :has-more="hasMore"
+          :is-dark-mode="isDarkMode"
+          @search="handleSearch"
+          @load-more="loadMore"
+          @select-store="selectStore"
+      />
+    </div>
 
     <!-- Map area (full width on mobile, 2/3 on desktop) -->
     <div class="w-full md:w-2/3 h-1/2 md:h-full relative order-1 md:order-2">
@@ -252,13 +255,15 @@ export default {
           map: map.value
         });
 
+        const infoWindowContent = `
+      <div class="info-window p-2 pl-10 border rounded w-full cursor-pointer" style="padding: 10px; position: relative;">
+        <h3 class="" style="margin-bottom: 5px;">${getSubjectEmoji(store.subject_id)} ${store.title}</h3>
+        <p class="text-sm" style="margin-bottom: 5px;">${store.address}</p>
+      </div>
+    `;
+
         const infoWindow = new naver.maps.InfoWindow({
-          content: `
-            <div class="p-2 pl-10 border rounded w-full" style="padding: 10px;">
-              <h3 class="" style="margin-bottom: 5px;">${getSubjectEmoji(store.subject_id)} ${store.title}</h3>
-              <p class="text-sm" style="margin-bottom: 5px;">${store.address}</p>
-            </div>
-          `,
+          content: infoWindowContent,
           borderWidth: 0,
           anchorSize: new naver.maps.Size(0, 0),
           pixelOffset: new naver.maps.Point(0, -10)
@@ -268,6 +273,15 @@ export default {
 
         naver.maps.Event.addListener(marker, 'click', () => {
           showInfoWindow(marker);
+        });
+
+        naver.maps.Event.addListener(infoWindow, 'open', () => {
+          const closeBtn = infoWindow.contentElement;
+          if (closeBtn) {
+            closeBtn.onclick = () => {
+              infoWindow.close();
+            };
+          }
         });
 
         markers.value.push(marker);
@@ -283,7 +297,11 @@ export default {
 
       if (markerInfoWindows.value.has(marker)) {
         const infoWindow = markerInfoWindows.value.get(marker);
-        infoWindow.open(map.value, marker);
+        if (infoWindow.getMap()) {
+          infoWindow.close();
+        } else {
+          infoWindow.open(map.value, marker);
+        }
       }
     };
 
