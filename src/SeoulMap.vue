@@ -55,11 +55,11 @@
 
 <script>
 import {ref, onMounted, computed, watch, onBeforeMount} from 'vue';
-import {supabase} from '@/composables/supabaseClient';
 import FloatingButtons from "@/components/FloatingButtons.vue";
 import StoreList from "@/components/StoreList.vue";
 import MapView from "@/components/MapView.vue";
 import MobileBottomSheet from "@/components/MobileBottomSheet.vue";
+import axios from 'axios';
 
 export default {
   name: 'SeoulMap',
@@ -97,35 +97,29 @@ export default {
 
       try {
         // Check local cache
-        const cachedData = localStorage.getItem(CACHE_KEY)
-        const cacheTimestamp = localStorage.getItem(`${CACHE_KEY}_timestamp`)
+        const cachedData = localStorage.getItem(CACHE_KEY);
+        const cacheTimestamp = localStorage.getItem(`${CACHE_KEY}_timestamp`);
 
         if (cachedData && cacheTimestamp) {
-          const parsedSubjects = JSON.parse(cachedData)
-          const cacheAge = Date.now() - parseInt(cacheTimestamp)
+          const parsedSubjects = JSON.parse(cachedData);
+          const cacheAge = Date.now() - parseInt(cacheTimestamp);
 
           if (cacheAge < CACHE_EXPIRY) {
-            subjects.value = parsedSubjects
-            loading.value = false
-            return
+            subjects.value = parsedSubjects;
+            loading.value = false;
+            return;
           }
         }
 
-        // Call Supabase Function
-        const {data, error: subjectsError} = await supabase.functions.invoke('subject-search', {
-          body: JSON.stringify({
-            // Add parameters if needed
-          })
-        });
-
-        if (subjectsError) throw subjectsError;
+        // Express API 엔드포인트 호출
+        const response = await axios.get('http://218.38.189.94:13000/subject-list');
+        const data = response.data;
 
         subjects.value = data.subjects;
 
         // Update local cache
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data.subjects))
-        localStorage.setItem(`${CACHE_KEY}_timestamp`, Date.now().toString())
-
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data.subjects));
+        localStorage.setItem(`${CACHE_KEY}_timestamp`, Date.now().toString());
       } catch (err) {
         console.error('Error loading subjects:', err);
         error.value = '업종 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해 주세요.';
@@ -142,7 +136,7 @@ export default {
 
       let latMin, latMax, lonMin, lonMax;
       if (useCoordinates && searchCoordinates.value) {
-        ({latMin, latMax, lonMin, lonMax} = searchCoordinates.value);
+        ({ latMin, latMax, lonMin, lonMax } = searchCoordinates.value);
       }
 
       if (reset) {
@@ -152,8 +146,9 @@ export default {
 
       const searchQueryParam = isQuerySearch.value ? query : '';
       try {
-        const {data, error: searchError} = await supabase.functions.invoke('store-search', {
-          body: JSON.stringify({
+        // Express API 엔드포인트 호출
+        const response = await axios.get('http://218.38.189.94:13000/store-search', {
+          params: {
             subjects: useCoordinates ? selectedSubjects.value : null,
             query: searchQueryParam,
             page: currentPage.value,
@@ -162,12 +157,11 @@ export default {
             lonMin,
             lonMax,
             pageSize,
-            useCoordinates: useCoordinates && !isQuerySearch.value
-          })
+            useCoordinates: useCoordinates && !isQuerySearch.value,
+          },
         });
 
-        if (searchError) throw searchError;
-
+        const data = response.data;
         stores.value = reset ? data.stores : [...stores.value, ...data.stores];
         totalCount.value = data.count;
         updateMarkers(data.stores, reset);
