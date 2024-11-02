@@ -112,7 +112,7 @@ export default {
         }
 
         // Express API 엔드포인트 호출
-        const response = await axios.get('http://218.38.189.94:13000/subject-list');
+        const response = await axios.get('https://localwave-api.dongpark.dev/subject-list');
         const data = response.data;
 
         subjects.value = data.subjects;
