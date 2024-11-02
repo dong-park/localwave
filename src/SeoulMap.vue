@@ -147,7 +147,7 @@ export default {
       const searchQueryParam = isQuerySearch.value ? query : '';
       try {
         // Express API 엔드포인트 호출
-        const response = await axios.get('http://218.38.189.94:13000/store-search', {
+        const response = await axios.get('https://localwave-api.dongpark.dev/store-search', {
           params: {
             subjects: useCoordinates ? selectedSubjects.value : null,
             query: searchQueryParam,
